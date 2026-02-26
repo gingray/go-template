@@ -45,9 +45,10 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			return err
 		}
-		appNode := component.NewNode(app)
+		rootNode := component.NewSupervisor(app.Logger)
+		appNode := rootNode.AddComponent(app)
 		appNode.AddComponent(server.NewServer(&cfg.HTTPServiceConfig, app))
-		return appNode.Run(cmd.Context())
+		return rootNode.Run(cmd.Context())
 	},
 }
 

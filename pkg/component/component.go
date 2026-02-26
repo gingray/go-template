@@ -7,7 +7,7 @@ import (
 )
 
 type Component interface {
-	ComponentName() string
+	Name() string
 	Ready(ctx context.Context) error
 	Run(ctx context.Context) error
 	Shutdown(ctx context.Context) error
@@ -35,7 +35,7 @@ func (b *BaseComponent) Ready(ctx context.Context) error {
 func (b *BaseComponent) Shutdown(ctx context.Context) error {
 	g, errCtx := errgroup.WithContext(ctx)
 
-	for _, handler := range b.ReadyHandlers {
+	for _, handler := range b.ShutdownHandlers {
 		g.Go(func() error {
 			return handler(errCtx)
 		})

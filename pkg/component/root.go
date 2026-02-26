@@ -11,13 +11,17 @@ type RootComponent struct {
 	BaseComponent
 }
 
-func (r *RootComponent) ComponentName() string {
+func (r *RootComponent) Name() string {
 	return "root"
 }
 
 func (r *RootComponent) Run(ctx context.Context) error {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	return nil
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	<-ctx.Done()
+	return ctx.Err()
+}
+func NewRootComponent() *RootComponent {
+	return &RootComponent{}
 }

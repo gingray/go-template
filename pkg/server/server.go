@@ -17,7 +17,7 @@ type Server struct {
 	addr   string
 }
 
-func (s *Server) ComponentName() string {
+func (s *Server) Name() string {
 	return "http_server"
 }
 

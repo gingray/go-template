@@ -20,7 +20,7 @@ type App struct {
 	Logger     *slog.Logger
 }
 
-func (a *App) ComponentName() string {
+func (a *App) Name() string {
 	return "app"
 }
 

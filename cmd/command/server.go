@@ -4,9 +4,9 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package command
 
 import (
-	"fmt"
-
 	"github.com/gingray/go-template/pkg/common"
+	"github.com/gingray/go-template/pkg/component"
+	"github.com/gingray/go-template/pkg/server"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
@@ -41,13 +41,13 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			return err
 		}
-		fmt.Println(cfg)
 		app, err := common.NewApp(cfg)
 		if err != nil {
 			return err
 		}
-		err = app.Start()
-		return err
+		appNode := component.NewNode(app)
+		appNode.AddComponent(server.NewServer(&cfg.HTTPServiceConfig, app))
+		return appNode.Run(cmd.Context())
 	},
 }
 

@@ -20,6 +20,10 @@ type App struct {
 	Logger     *slog.Logger
 }
 
+func (a *App) ComponentName() string {
+	return "app"
+}
+
 func NewApp(cfg *Config) (*App, error) {
 	app := &App{}
 	err := app.WithLogger()
@@ -27,31 +31,32 @@ func NewApp(cfg *Config) (*App, error) {
 		return nil, err
 	}
 
-	err = app.WithPostgres(&cfg.PostgresConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = app.WithRedis(&cfg.RedisConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	err = app.WithKafka(&cfg.KafkaConfig)
-	if err != nil {
-		return nil, err
-	}
 	err = app.WithHTTPRouter()
 	if err != nil {
 		return nil, err
 	}
-	err = InitSentry(&cfg.SentryConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = InitDataDog(&cfg.DataDogConfig)
-	if err != nil {
-		return nil, err
-	}
+
+	//err = app.WithPostgres(&cfg.PostgresConfig)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//err = app.WithRedis(&cfg.RedisConfig)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//err = app.WithKafka(&cfg.KafkaConfig)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//err = InitSentry(&cfg.SentryConfig)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//err = InitDataDog(&cfg.DataDogConfig)
+	//if err != nil {
+	//	return nil, err
+	//}
 	return app, nil
 }
 

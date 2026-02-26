@@ -7,6 +7,7 @@ import (
 )
 
 type Component interface {
+	ComponentName() string
 	Ready(ctx context.Context) error
 	Run(ctx context.Context) error
 	Shutdown(ctx context.Context) error

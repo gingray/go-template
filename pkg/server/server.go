@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/gin-gonic/gin"
@@ -13,12 +14,18 @@ type Server struct {
 	component.BaseComponent
 	router *gin.Engine
 	logger *slog.Logger
+	addr   string
 }
 
-func NewServer(app *common.App) *Server {
+func (s *Server) ComponentName() string {
+	return "http_server"
+}
+
+func NewServer(cfg *common.HTTPServiceConfig, app *common.App) *Server {
 	return &Server{
 		router: app.HttpRouter,
 		logger: app.Logger,
+		addr:   fmt.Sprintf(":%d", cfg.Port),
 	}
 }
 
@@ -29,7 +36,8 @@ func (s *Server) Run(ctx context.Context) error {
 		s.router.GET("/ping", func(c *gin.Context) {
 			c.JSON(200, gin.H{"message": "pong"})
 		})
-		err := s.router.Run()
+		s.logger.Info("Server started", "addr", s.addr)
+		err := s.router.Run(s.addr)
 		errCh <- err
 	}()
 	select {

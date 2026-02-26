@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
@@ -13,13 +14,21 @@ type RedisConfig struct {
 	Db       int    `env:"REDIS_DB" envDefault:"0"`
 }
 
-func NewRedis(cfg *RedisConfig) (*redis.Client, error) {
+func (a *App) WithRedis(cfg *RedisConfig) error {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     cfg.Addr(),
 		Password: cfg.Password,
 		DB:       cfg.Db,
 	})
-	return rdb, nil
+	a.Rdb = rdb
+	a.AddReadyHandler(func(ctx context.Context) error {
+		return rdb.Ping(ctx).Err()
+	})
+	a.AddShutdownHandler(func(ctx context.Context) error {
+		return rdb.Close()
+	})
+
+	return nil
 }
 
 func (r RedisConfig) Addr() string {

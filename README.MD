@@ -2,6 +2,24 @@
 A template for microservice development in Go. Most of the boilerplate code is already done. Setup and configuration is done with environment variables.  
 Defaults are set for Redis, Postgres, Datadog, Sentry, Gin, Franz Kafka, and Redis.
 ## STILL WORK IN PROGRESS
+
+# Use as template
+
+```shell
+go install golang.org/x/tools/cmd/gonew@latest
+gonew github.com/gingray/go-template example.com/myapp path-to-dir
+```
+`example.com/myapp` - package name of your application.
+`path-to-dir` - path to directory where you want to create application.
+
+One caveat when use gonew it will cache repo means you will need to manully delete cache folder to avoid confusion.
+You need to run something like this
+```shell
+ls $(go env GOMODCACHE)/github.com/gingray
+rm -rf $(go env GOMODCACHE)/github.com/gingray
+# or use go clean -modcache but it will clean all cache probably not what you want 
+go clean -modcache
+```
 ## Dependencies
 
 ```shell

@@ -36,10 +36,10 @@ func NewApp(cfg *Config) (*App, error) {
 		return nil, err
 	}
 
-	//err = app.WithPostgres(&cfg.PostgresConfig)
-	//if err != nil {
-	//	return nil, err
-	//}
+	err = app.WithPostgres(&cfg.PostgresConfig)
+	if err != nil {
+		return nil, err
+	}
 	//err = app.WithRedis(&cfg.RedisConfig)
 	//if err != nil {
 	//	return nil, err

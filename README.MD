@@ -1,6 +1,7 @@
 # Go-Microservice-Template
 A template for microservice development in Go. Most of the boilerplate code is already done. Setup and configuration is done with environment variables.  
 Defaults are set for Redis, Postgres, Datadog, Sentry, Gin, Franz Kafka, and Redis.
+## STILL WORK IN PROGRESS
 ## Dependencies
 
 ```shell

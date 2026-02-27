@@ -46,8 +46,10 @@ to quickly create a Cobra application.`,
 			return err
 		}
 		rootNode := component.NewSupervisor(app.Logger)
+		//shutdownCh := make(chan struct{})
 		appNode := rootNode.AddComponent(app)
-		appNode.AddComponent(server.NewServer(&cfg.HTTPServiceConfig, app))
+
+		appNode.AddComponent(component.NewRetryComponent(server.NewServer(&cfg.HTTPServiceConfig, app), 3))
 		return rootNode.Run(cmd.Context())
 	},
 }

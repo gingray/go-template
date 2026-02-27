@@ -4,6 +4,8 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package command
 
 import (
+	"errors"
+
 	"github.com/gingray/go-template/pkg/common"
 	"github.com/gingray/go-template/pkg/component"
 	"github.com/gingray/go-template/pkg/server"
@@ -21,39 +23,35 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		devMode, err := cmd.Flags().GetBool("dev")
-		if err != nil {
-			return err
-		}
+	PreRun: func(cmd *cobra.Command, args []string) {
+		devMode, _ := cmd.Flags().GetBool("dev")
 		if !devMode {
-			return nil
+			return
 		}
-
-		err = godotenv.Load()
-		if err != nil {
-			return err
-		}
-		return nil
+		_ = godotenv.Load()
+		return
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		cfg, err := common.NewConfig()
-		if err != nil {
-			return err
-		}
+	Run: func(cmd *cobra.Command, args []string) {
+		cfg, cfgErr := common.NewConfig()
 		app, err := common.NewApp(cfg)
 		if err != nil {
-			return err
+			err = errors.Join(cfgErr, err)
+		}
+		if err != nil {
+			app.Logger.Error("init app", "error", err)
+			return
 		}
 		supervisor := component.NewSupervisor(app.Logger)
 		rootNode := supervisor.CreateRootNode()
-		//shutdownCh := make(chan struct{})
 		appNode := supervisor.CreateNode(app)
 		serverNode := supervisor.CreateNode(server.NewServer(&cfg.HTTPServiceConfig, app))
 
 		rootNode.AddNode(appNode)
 		appNode.AddNode(serverNode)
-		return rootNode.Run(cmd.Context())
+		err = rootNode.Run(cmd.Context())
+		if err != nil {
+			app.Logger.Error("run root node", "error", err)
+		}
 	},
 }
 

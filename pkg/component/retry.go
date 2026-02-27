@@ -2,45 +2,61 @@ package component
 
 import (
 	"context"
-	"fmt"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
-type RetryComponent struct {
-	BaseComponent
-	Retry     int
-	Component Component
+type RetryStrategy struct {
+	Retry int
 }
 
-func (r *RetryComponent) Name() string {
-	return "retry"
+func (r *RetryStrategy) Process(ctx context.Context, n *Node) error {
+	g, errCtx := errgroup.WithContext(ctx)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	g.Go(func() error {
+		n.logger.Info("supervisor", "status", Run, "component", n.Component.Name())
+		wg.Done()
+		return n.Component.Run(ctx)
+	})
+	wg.Wait()
+	wg = sync.WaitGroup{}
+	for _, node := range n.Nodes {
+		wg.Add(1)
+		go r.runner(errCtx, node, &wg)
+	}
+	wg.Wait()
+	for _, component := range n.Nodes {
+		err := component.Shutdown(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	n.logger.Info("supervisor", "status", ShutdownStart, "component", n.Component.Name())
+	err := n.Component.Shutdown(ctx)
+	n.logger.Info("supervisor", "status", ShutdownFinish, "component", n.Component.Name())
+	return err
 }
 
-func (r *RetryComponent) Run(ctx context.Context) error {
+func (r *RetryStrategy) runner(ctx context.Context, n *Node, wg *sync.WaitGroup) {
+	currentTry := 0
+	defer wg.Done()
 	for i := 0; i < r.Retry; i++ {
-		errorCh := make(chan error)
+		errCh := make(chan error)
 		go func() {
-			err := r.Component.Run(ctx)
-			if err != nil {
-				errorCh <- err
-			}
+			err := n.Run(ctx)
+			errCh <- err
 		}()
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case err := <-errorCh:
-			fmt.Println(err)
-			err = r.Component.Shutdown(ctx)
-			fmt.Println(err)
-			err = r.Component.Ready(ctx)
-			fmt.Println(err)
+			return
+		case err := <-errCh:
+			n.logger.Error("supervisor", "status", ShutdownStart, "component", n.Component.Name(), "error", err, "currentTry", currentTry)
+			err = n.Shutdown(ctx)
+			n.logger.Error("supervisor", "status", ShutdownFinish, "component", n.Component.Name(), "error", err, "currentTry", currentTry)
+			break
 		}
+		currentTry++
 	}
-	return nil
-}
-
-func NewRetryComponent(component Component, retry int) *RetryComponent {
-	retryComponent := &RetryComponent{Component: component, Retry: retry}
-	retryComponent.AddReadyHandler(component.Ready)
-	retryComponent.AddShutdownHandler(component.Shutdown)
-	return retryComponent
 }

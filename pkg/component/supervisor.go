@@ -16,30 +16,42 @@ const (
 	ShutdownFinish   = "shutdown-finish"
 )
 
-type Node struct {
+type Node interface {
+	Run(ctx context.Context) error
+	Shutdown(ctx context.Context) error
+}
+
+type Supervisor struct {
+	logger *slog.Logger
+}
+
+func NewSupervisor(logger *slog.Logger) *Supervisor {
+	return &Supervisor{logger: logger}
+}
+
+type BaseNode struct {
 	Component Component
-	Nodes     []*Node
+	Nodes     []Node
 	logger    *slog.Logger
 }
 
-func NewSupervisor(logger *slog.Logger) *Node {
-	return &Node{Component: NewRootComponent(), Nodes: []*Node{}, logger: logger}
+func (s *Supervisor) CreateRootNode() *BaseNode {
+	return &BaseNode{Component: NewRootComponent(), Nodes: []Node{}, logger: s.logger}
 }
 
-func (n *Node) NewNode(component Component) *Node {
-	return &Node{
+func (n *BaseNode) NewNode(component Component) *BaseNode {
+	return &BaseNode{
 		Component: component,
-		Nodes:     []*Node{},
+		Nodes:     []Node{},
 		logger:    n.logger,
 	}
 }
 
-func (n *Node) AddComponent(component Component) *Node {
-	newNode := n.NewNode(component)
-	n.Nodes = append(n.Nodes, newNode)
-	return newNode
+func (n *BaseNode) AddNode(node Node) {
+	n.Nodes = append(n.Nodes, node)
 }
-func (n *Node) Run(ctx context.Context) error {
+
+func (n *BaseNode) Run(ctx context.Context) error {
 	n.logger.Info("supervisor", "status", ReadyCheckStart, "component", n.Component.Name())
 	err := n.Component.Ready(ctx)
 	n.logger.Info("supervisor", "status", ReadyCheckFinish, "component", n.Component.Name())
@@ -64,7 +76,7 @@ func (n *Node) Run(ctx context.Context) error {
 	}
 	err = g.Wait()
 	for _, component := range n.Nodes {
-		err := component.shutdown(ctx)
+		err := component.Shutdown(ctx)
 		if err != nil {
 			return err
 		}
@@ -75,9 +87,9 @@ func (n *Node) Run(ctx context.Context) error {
 	return err
 }
 
-func (n *Node) shutdown(ctx context.Context) error {
+func (n *BaseNode) Shutdown(ctx context.Context) error {
 	for _, node := range n.Nodes {
-		err := node.shutdown(ctx)
+		err := node.Shutdown(ctx)
 		if err != nil {
 			return err
 		}

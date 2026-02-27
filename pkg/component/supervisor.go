@@ -29,26 +29,36 @@ func NewSupervisor(logger *slog.Logger) *Supervisor {
 	return &Supervisor{logger: logger}
 }
 
-type BaseNode struct {
+type base[T Node] struct {
 	Component Component
 	Nodes     []Node
 	logger    *slog.Logger
 }
 
-func (s *Supervisor) CreateRootNode() *BaseNode {
-	return &BaseNode{Component: NewRootComponent(), Nodes: []Node{}, logger: s.logger}
+func (b *base[T]) AddNode(node Node) {
+	b.Nodes = append(b.Nodes, node)
 }
 
-func (n *BaseNode) NewNode(component Component) *BaseNode {
-	return &BaseNode{
-		Component: component,
-		Nodes:     []Node{},
-		logger:    n.logger,
+func (b *base[T]) Shutdown(ctx context.Context) error {
+	for _, node := range b.Nodes {
+		err := node.Shutdown(ctx)
+		if err != nil {
+			return err
+		}
 	}
+	return b.Component.Shutdown(ctx)
 }
 
-func (n *BaseNode) AddNode(node Node) {
-	n.Nodes = append(n.Nodes, node)
+type BaseNode struct {
+	base[*BaseNode]
+}
+
+func (s *Supervisor) CreateRootNode() *BaseNode {
+	return &BaseNode{base[*BaseNode]{Component: NewRootComponent(), Nodes: []Node{}, logger: s.logger}}
+}
+
+func (s *Supervisor) CreateNode(component Component) *BaseNode {
+	return &BaseNode{base[*BaseNode]{Component: component, Nodes: []Node{}, logger: s.logger}}
 }
 
 func (n *BaseNode) Run(ctx context.Context) error {
@@ -85,14 +95,4 @@ func (n *BaseNode) Run(ctx context.Context) error {
 	err = n.Component.Shutdown(ctx)
 	n.logger.Info("supervisor", "status", ShutdownFinish, "component", n.Component.Name())
 	return err
-}
-
-func (n *BaseNode) Shutdown(ctx context.Context) error {
-	for _, node := range n.Nodes {
-		err := node.Shutdown(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	return n.Component.Shutdown(ctx)
 }

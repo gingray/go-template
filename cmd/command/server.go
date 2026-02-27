@@ -45,11 +45,14 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			return err
 		}
-		rootNode := component.NewSupervisor(app.Logger)
+		supervisor := component.NewSupervisor(app.Logger)
+		rootNode := supervisor.CreateRootNode()
 		//shutdownCh := make(chan struct{})
-		appNode := rootNode.AddComponent(app)
+		appNode := supervisor.CreateNode(app)
+		serverNode := supervisor.CreateNode(server.NewServer(&cfg.HTTPServiceConfig, app))
 
-		appNode.AddComponent(component.NewRetryComponent(server.NewServer(&cfg.HTTPServiceConfig, app), 3))
+		rootNode.AddNode(appNode)
+		appNode.AddNode(serverNode)
 		return rootNode.Run(cmd.Context())
 	},
 }

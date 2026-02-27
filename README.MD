@@ -13,3 +13,11 @@ go get gopkg.in/DataDog/dd-trace-go.v1/ddtrace
 go get gopkg.in/DataDog/dd-trace-go.v1/profiler
 go get github.com/gin-gonic/gin
 ```
+
+## Fail Strategy
+Possible fail strategies:
+* Do nothing if child components fails
+* Shutdown if any error occurs (parent or child)
+* Shutdown all components if error occur in parent
+* Retry on error in child component
+* Retry on error in parent component (shutdown child, start parent and start child)

@@ -40,15 +40,17 @@ func NewApp(cfg *Config) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	//err = app.WithRedis(&cfg.RedisConfig)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//err = app.WithKafka(&cfg.KafkaConfig)
-	//if err != nil {
-	//	return nil, err
-	//}
+
+	err = app.WithRedis(&cfg.RedisConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.WithKafka(&cfg.KafkaConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	//err = InitSentry(&cfg.SentryConfig)
 	//if err != nil {
 	//	return nil, err

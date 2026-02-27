@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gingray/go-template/pkg/common"
 	"github.com/gingray/go-template/pkg/component"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type Server struct {
@@ -17,6 +18,7 @@ type Server struct {
 	router *gin.Engine
 	logger *slog.Logger
 	addr   string
+	kafka  *kgo.Client
 	ch     chan struct{}
 }
 
@@ -31,10 +33,26 @@ func NewServer(cfg *common.HTTPServiceConfig, app *common.App) *Server {
 		addr:   fmt.Sprintf(":%d", cfg.Port),
 	}
 	server.router.GET("/ping", func(c *gin.Context) {
-		go func() {
-			<-time.After(time.Second * 2)
-			close(server.ch)
-		}()
+		//go func() {
+		//	<-time.After(time.Second * 2)
+		//	close(server.ch)
+		//}()
+
+		record := &kgo.Record{
+			Topic: "test-topic",
+			Key:   []byte("key1"),
+			Value: []byte(`{"message": "hello"}`),
+		}
+		newCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		err := app.Kafka.Ping(newCtx)
+		if err != nil {
+			app.Logger.Error("ping kafka", "error", err)
+		}
+		app.Logger.Info("ping kafka", "topic", "test-topic")
+		if err := app.Kafka.ProduceSync(newCtx, record).FirstErr(); err != nil {
+			app.Logger.Error("produce message", "error", err)
+		}
 		c.JSON(200, gin.H{"message": "pong"})
 	})
 

@@ -6,8 +6,9 @@ package command
 import (
 	"errors"
 
-	"github.com/gingray/go-template/pkg/common"
-	"github.com/gingray/go-template/pkg/component"
+	"github.com/gingray/go-template/pkg/app"
+	"github.com/gingray/go-template/pkg/config"
+	"github.com/gingray/go-template/pkg/infra"
 	"github.com/gingray/go-template/pkg/server"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -32,8 +33,8 @@ to quickly create a Cobra application.`,
 		return
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, cfgErr := common.NewConfig()
-		app, err := common.NewApp(cfg)
+		cfg, cfgErr := config.NewConfig()
+		app, err := app.NewApp(cfg)
 		if err != nil {
 			err = errors.Join(cfgErr, err)
 		}
@@ -41,7 +42,7 @@ to quickly create a Cobra application.`,
 			app.Logger.Error("init app", "error", err)
 			return
 		}
-		supervisor := component.NewSupervisor(app.Logger)
+		supervisor := infra.NewSupervisor(app.Logger)
 		rootNode := supervisor.CreateRootNode()
 		appNode := supervisor.CreateNode(app)
 		serverNode := supervisor.CreateNode(server.NewServer(&cfg.HTTPServiceConfig, app))

@@ -1,20 +1,12 @@
-package common
+package app
 
 import (
+	"github.com/gingray/go-template/pkg/config"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 )
 
-type DataDogConfig struct {
-	AgentAddr        string `env:"DD_AGENT_ADDR"       envDefault:"localhost:8126"`
-	ServiceName      string `env:"DD_SERVICE"          envDefault:"my-service"`
-	Environment      string `env:"DD_ENV"              envDefault:"dev"`
-	Version          string `env:"DD_VERSION"          envDefault:"1.0.0"`
-	Enabled          bool   `env:"DD_ENABLED"          envDefault:"false"`
-	ProfilingEnabled bool   `env:"DD_PROFILING_ENABLED" envDefault:"false"`
-}
-
-func InitDataDog(cfg *DataDogConfig) error {
+func InitDataDog(cfg *config.DataDogConfig) error {
 	if !cfg.Enabled {
 		return nil
 	}

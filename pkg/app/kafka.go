@@ -1,18 +1,13 @@
-package common
+package app
 
 import (
 	"context"
 
+	"github.com/gingray/go-template/pkg/config"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-type KafkaConfig struct {
-	Brokers       []string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
-	ConsumerGroup string   `env:"KAFKA_CONSUMER_GROUP" envDefault:"test"`
-	ConsumeTopics []string `env:"KAFKA_CONSUME_TOPICS" envDefault:"test"`
-}
-
-func (a *App) WithKafka(cfg *KafkaConfig) error {
+func (a *App) WithKafka(cfg *config.KafkaConfig) error {
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(cfg.Brokers...),
 		kgo.ConsumerGroup(cfg.ConsumerGroup),
@@ -28,7 +23,7 @@ func (a *App) WithKafka(cfg *KafkaConfig) error {
 			client.Close()
 			close(closeCh)
 		}()
-	
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

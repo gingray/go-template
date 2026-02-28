@@ -1,9 +1,10 @@
-package component
+package infra
 
 import (
 	"context"
 	"errors"
-	"log/slog"
+
+	"github.com/gingray/go-template/pkg/config"
 )
 
 const (
@@ -21,10 +22,10 @@ type strategy interface {
 }
 
 type Supervisor struct {
-	logger *slog.Logger
+	logger config.Logger
 }
 
-func NewSupervisor(logger *slog.Logger) *Supervisor {
+func NewSupervisor(logger config.Logger) *Supervisor {
 	return &Supervisor{logger: logger}
 }
 
@@ -45,7 +46,7 @@ func (n *Node) Shutdown(ctx context.Context) error {
 type Node struct {
 	Component Component
 	Nodes     []*Node
-	logger    *slog.Logger
+	logger    config.Logger
 	strategy  strategy
 }
 

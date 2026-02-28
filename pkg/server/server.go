@@ -3,20 +3,20 @@ package server
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gingray/go-template/pkg/common"
-	"github.com/gingray/go-template/pkg/component"
+	"github.com/gingray/go-template/pkg/app"
+	"github.com/gingray/go-template/pkg/config"
+	"github.com/gingray/go-template/pkg/infra"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type Server struct {
-	component.BaseComponent
+	infra.BaseComponent
 	router *gin.Engine
-	logger *slog.Logger
+	logger config.Logger
 	addr   string
 	kafka  *kgo.Client
 	ch     chan struct{}
@@ -26,7 +26,7 @@ func (s *Server) Name() string {
 	return "http_server"
 }
 
-func NewServer(cfg *common.HTTPServiceConfig, app *common.App) *Server {
+func NewServer(cfg *config.HTTPServiceConfig, app *app.App) *Server {
 	server := &Server{
 		router: app.HttpRouter,
 		logger: app.Logger,

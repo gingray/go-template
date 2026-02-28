@@ -33,6 +33,22 @@ go get gopkg.in/DataDog/dd-trace-go.v1/profiler
 go get github.com/gin-gonic/gin
 ```
 
+```shell
+go install github.com/pressly/goose/v3/cmd/goose@latest
+```
+
+## Migrations
+Migrations are done with goose. Most popular migration tool for Go is go-migrate, but I found goose to be more intuitive.  
+Goose keep track of all applied migrations (go-migrate doesn't only last one applied) in case if migration fails with go-migrate you need  to manually fix it 
+which I think is not a good idea. Goose fix this problem. If migration fails, I need to fix it and goose try to apply it again.
+example of migration:
+
+```shell
+goose create create_users_table sql
+goose status
+goose up
+```
+
 ## Component system
 Component system gives ability to create component based application. Each component can be dependend on other components.
 It's solves problem, order of component initialization. Like you have Kafka, Postgres and you need Kafka and Postgres started

@@ -1,12 +1,8 @@
-package common
+package app
 
 import (
 	"github.com/gin-gonic/gin"
 )
-
-type HTTPServiceConfig struct {
-	Port int `env:"HTTP_PORT" envDefault:"3000"`
-}
 
 func (a *App) WithHTTPRouter() error {
 	gin.SetMode(gin.ReleaseMode)

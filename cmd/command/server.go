@@ -11,6 +11,7 @@ import (
 	"github.com/gingray/go-template/pkg/config"
 	"github.com/gingray/go-template/pkg/httpserver"
 	"github.com/gingray/go-template/pkg/infra"
+	"github.com/gingray/go-template/pkg/kafka"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
@@ -45,16 +46,19 @@ to quickly create a Cobra application.`,
 		}
 
 		server := httpserver.NewServer(&cfg.HTTPServiceConfig, app)
-		router := api.NewRouter(cfg)
+		router := api.NewRouter(app)
 		router.SetupRoutes(app.HttpRouter)
+		consumer := kafka.NewKafka(app)
 
 		supervisor := infra.NewSupervisor(app.Logger)
 		rootNode := supervisor.CreateRootNode()
 		appNode := supervisor.CreateNode(app)
 		serverNode := supervisor.CreateNode(server)
+		consumerNode := supervisor.CreateNode(consumer)
 
 		rootNode.AddNode(appNode)
 		appNode.AddNode(serverNode)
+		appNode.AddNode(consumerNode)
 		err = rootNode.Run(cmd.Context())
 		if err != nil {
 			app.Logger.Error("run root node", "error", err)

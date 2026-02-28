@@ -9,24 +9,30 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-type Kafka struct {
-	client *kgo.Client
-	logger config.Logger
+type Consume interface {
+	Topic() string
+	Consume(ctx context.Context, key string, value []byte) error
+}
+type Consumer struct {
+	client   *kgo.Client
+	logger   config.Logger
+	handlers map[string]Consume
 }
 
-func NewKafka(app *app.App) *Kafka {
-	return &Kafka{client: app.Kafka, logger: app.Logger}
+func NewConsumer(app *app.App, consumers ...Consume) *Consumer {
+	handlers := buildHandlers(consumers)
+	return &Consumer{client: app.Kafka, logger: app.Logger, handlers: handlers}
 }
 
-func (k *Kafka) Name() string {
+func (k *Consumer) Name() string {
 	return "kafka"
 }
 
-func (k *Kafka) Ready(ctx context.Context) error {
+func (k *Consumer) Ready(ctx context.Context) error {
 	return nil
 }
 
-func (k *Kafka) Run(ctx context.Context) error {
+func (k *Consumer) Run(ctx context.Context) error {
 	for {
 		fetches := k.client.PollFetches(ctx)
 		if fetches.IsClientClosed() {
@@ -38,7 +44,16 @@ func (k *Kafka) Run(ctx context.Context) error {
 		}
 
 		fetches.EachRecord(func(r *kgo.Record) {
-			k.logger.Info("kafka msg", "topic", r.Topic, "key", string(r.Key), "value", string(r.Value))
+			handler, ok := k.handlers[r.Topic]
+			key := string(r.Key)
+			if !ok {
+				k.logger.Warn("no consumer handler for topic", "topic", r.Topic, "key", key)
+				return
+			}
+			err := handler.Consume(ctx, key, r.Value)
+			if err != nil {
+				k.logger.Error("consumer error", "topic", r.Topic, "key", key, "error", err)
+			}
 		})
 
 		// commit offsets if using consumer group
@@ -48,7 +63,15 @@ func (k *Kafka) Run(ctx context.Context) error {
 	}
 }
 
-func (k *Kafka) Shutdown(ctx context.Context) error {
+func (k *Consumer) Shutdown(ctx context.Context) error {
 	k.client.Close()
 	return nil
+}
+
+func buildHandlers(consumers []Consume) map[string]Consume {
+	consumerMap := make(map[string]Consume)
+	for _, consumer := range consumers {
+		consumerMap[consumer.Topic()] = consumer
+	}
+	return consumerMap
 }

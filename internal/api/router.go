@@ -2,22 +2,21 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gingray/go-template/pkg/app"
+	"github.com/gingray/go-template/pkg/kafka"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type Router struct {
-	pgPool      *pgxpool.Pool
-	kafkaClient *kgo.Client
+	pgPool        *pgxpool.Pool
+	kafkaProducer kafka.Client
 }
 
-func NewRouter(app *app.App) *Router {
-	return &Router{pgPool: app.PgPool, kafkaClient: app.Kafka}
+func NewRouter(app *app.App, kafkaProducer kafka.Client) *Router {
+	return &Router{pgPool: app.PgPool, kafkaProducer: kafkaProducer}
 }
 
 func (r *Router) SetupRoutes(router *gin.Engine) {
@@ -59,12 +58,6 @@ func (r *Router) KafkaProducer(c *gin.Context) {
 		"id":    id,
 		"email": email,
 	}
-	value, _ := json.Marshal(msg)
-	record := kgo.Record{
-		Key:   []byte(key),
-		Topic: "test-topic",
-		Value: value,
-	}
-	r.kafkaClient.ProduceSync(context.Background(), &record)
+	r.kafkaProducer.Produce(context.Background(), "test-topic", key, msg)
 	c.JSON(200, msg)
 }

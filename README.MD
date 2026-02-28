@@ -125,5 +125,5 @@ It's cover possible scenario when component like Kafka need to restart when conf
 
 ## Other
 Interesting projects to keep an eye on:
-https://github.com/stefanprodan/podinfo
-https://github.com/evrone/go-clean-template
+https://github.com/stefanprodan/podinfo  
+https://github.com/evrone/go-clean-template  

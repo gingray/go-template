@@ -6,10 +6,11 @@ package command
 import (
 	"errors"
 
+	"github.com/gingray/go-template/internal/api"
 	"github.com/gingray/go-template/pkg/app"
 	"github.com/gingray/go-template/pkg/config"
+	"github.com/gingray/go-template/pkg/httpserver"
 	"github.com/gingray/go-template/pkg/infra"
-	"github.com/gingray/go-template/pkg/server"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
@@ -42,10 +43,15 @@ to quickly create a Cobra application.`,
 			app.Logger.Error("init app", "error", err)
 			return
 		}
+
+		server := httpserver.NewServer(&cfg.HTTPServiceConfig, app)
+		router := api.NewRouter(cfg)
+		router.SetupRoutes(app.HttpRouter)
+
 		supervisor := infra.NewSupervisor(app.Logger)
 		rootNode := supervisor.CreateRootNode()
 		appNode := supervisor.CreateNode(app)
-		serverNode := supervisor.CreateNode(server.NewServer(&cfg.HTTPServiceConfig, app))
+		serverNode := supervisor.CreateNode(server)
 
 		rootNode.AddNode(appNode)
 		appNode.AddNode(serverNode)

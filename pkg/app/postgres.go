@@ -2,29 +2,25 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/gingray/go-template/pkg/config"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func (a *App) WithPostgres(cfg *config.PostgresConfig) error {
-	db, err := sql.Open("pgx", cfg.DSN())
-	a.PGdb = db
+	pgPool, err := pgxpool.New(context.Background(), cfg.DSN())
+	a.PgPool = pgPool
 	a.AddReadyHandler(func(ctx context.Context) error {
-		err := db.PingContext(ctx)
+		err := pgPool.Ping(ctx)
 		if err != nil {
 			err = fmt.Errorf("ping postgres: %w", err)
 		}
 		return err
 	})
 	a.AddShutdownHandler(func(ctx context.Context) error {
-		err := db.Close()
-		if err != nil {
-			err = fmt.Errorf("shutdown postgres: %w", err)
-		}
-		return err
+		pgPool.Close()
+		return nil
 	})
 	return err
 }

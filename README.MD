@@ -52,7 +52,58 @@ goose create create_users_table sql
 goose status
 goose up
 ```
+## Postgres
+In app used pgxpool. Not database/sql, because pgxpool is more performant, but in some cases you need to use database/sql. In this case you can still use pgxpool 
+but need additional setup like
+```go
+	// Create the pgxpool with configured settings
+	pgxPool, err := pgxpool.NewWithConfig(ctx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("connect to database: %w", err)
+	}
 
+	// Record pool statistics for observability
+	err = otelpgx.RecordStats(pgxPool)
+	if err != nil {
+		return nil, fmt.Errorf("unable to record database stats: %w", err)
+	}
+
+	// Use stdlib connector to expose pgxpool as database/sql compatible interface
+	// This maintains the pool semantics while providing sql.DB interface for GORM
+	connector := stdlib.GetPoolConnector(pgxPool)
+	sqlDB := sql.OpenDB(connector)
+
+	// CRITICAL: Set MaxIdleConns to 0 as per GetPoolConnector documentation
+	// The pgxpool manages all connections internally. Setting idle connections on sql.DB
+	// would cause it to hold connections outside the pool, starving direct pgxpool users.
+	sqlDB.SetMaxIdleConns(0)
+
+	// Set MaxOpenConns to match pgxpool's MaxConns to prevent sql.DB from trying
+	// to open more connections than the pool allows
+	if poolOpts.MaxOpen > 0 {
+		sqlDB.SetMaxOpenConns(poolOpts.MaxOpen)
+	}
+
+	// Connection lifetime is managed by pgxpool, but we set it on sql.DB as well
+	// to ensure consistency in connection recycling behavior
+	if poolOpts.MaxLifetime > 0 {
+		sqlDB.SetConnMaxLifetime(poolOpts.MaxLifetime)
+	}
+
+	// Open GORM with the properly configured sql.DB backed by pgxpool
+	gormDB, err := gorm.Open(
+		postgres.New(postgres.Config{
+			Conn:                 sqlDB,
+			PreferSimpleProtocol: poolOpts.PreferSimpleProtocol,
+		}),
+		&gorm.Config{
+			Logger:                 datastoreLogger(ctx, poolOpts.TraceConfig),
+			SkipDefaultTransaction: poolOpts.SkipDefaultTransaction,
+			PrepareStmt:            true, // Enable prepared statement cache for better performance
+		},
+	)
+```
+I took this approach from here: https://github.com/pitabwire/frame/blob/v1.63.1/datastore/pool/connection.go#L46-L91
 ## Component system
 Component system gives ability to create component based application. Each component can be dependend on other components.
 It's solves problem, order of component initialization. Like you have Kafka, Postgres and you need Kafka and Postgres started
@@ -71,3 +122,8 @@ Solution can easy became way too complex then problem is trying to solve.
 Default approach is in case any error occurs in parent or child component, shutdown all components in proper order, from child to parent. 
 Except default approach, there another strategy to handle component it's restart when component get signal it can restart full hierarchy. 
 It's cover possible scenario when component like Kafka need to restart when configuration of topics is changed
+
+## Other
+Interesting projects to keep an eye on:
+https://github.com/stefanprodan/podinfo
+https://github.com/evrone/go-clean-template

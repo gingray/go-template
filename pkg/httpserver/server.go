@@ -1,10 +1,9 @@
-package server
+package httpserver
 
 import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gingray/go-template/pkg/app"
@@ -32,30 +31,6 @@ func NewServer(cfg *config.HTTPServiceConfig, app *app.App) *Server {
 		logger: app.Logger,
 		addr:   fmt.Sprintf(":%d", cfg.Port),
 	}
-	server.router.GET("/ping", func(c *gin.Context) {
-		//go func() {
-		//	<-time.After(time.Second * 2)
-		//	close(server.ch)
-		//}()
-
-		record := &kgo.Record{
-			Topic: "test-topic",
-			Key:   []byte("key1"),
-			Value: []byte(`{"message": "hello"}`),
-		}
-		newCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		err := app.Kafka.Ping(newCtx)
-		if err != nil {
-			app.Logger.Error("ping kafka", "error", err)
-		}
-		app.Logger.Info("ping kafka", "topic", "test-topic")
-		if err := app.Kafka.ProduceSync(newCtx, record).FirstErr(); err != nil {
-			app.Logger.Error("produce message", "error", err)
-		}
-		c.JSON(200, gin.H{"message": "pong"})
-	})
-
 	server.AddReadyHandler(func(ctx context.Context) error {
 		server.ch = make(chan struct{})
 		return nil

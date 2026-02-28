@@ -2,18 +2,18 @@ package app
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gingray/go-template/pkg/config"
 	"github.com/gingray/go-template/pkg/infra"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type App struct {
 	infra.BaseComponent
-	PGdb       *sql.DB
+	PgPool     *pgxpool.Pool
 	Rdb        *redis.Client
 	Kafka      *kgo.Client
 	HttpRouter *gin.Engine

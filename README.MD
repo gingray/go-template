@@ -124,6 +124,6 @@ Except default approach, there another strategy to handle component it's restart
 It's cover possible scenario when component like Kafka need to restart when configuration of topics is changed
 
 ## Other
-Interesting projects to keep an eye on:
+Interesting projects to keep an eye on:  
 https://github.com/stefanprodan/podinfo  
 https://github.com/evrone/go-clean-template  

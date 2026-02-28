@@ -9,14 +9,18 @@ Defaults are set for Redis, Postgres, Datadog, Sentry, Gin, Franz Kafka, and Red
 go install golang.org/x/tools/cmd/gonew@latest
 gonew github.com/gingray/go-template example.com/myapp path-to-dir
 ```
-`example.com/myapp` - package name of your application.
-`path-to-dir` - path to directory where you want to create application.
+`example.com/myapp` - package name of your application.  
+`path-to-dir` - path to directory where you want to create application.  
 
 One caveat when use gonew it will cache repo means you will need to manully delete cache folder to avoid confusion.
 You need to run something like this
 ```shell
+# check if you have cache
 ls $(go env GOMODCACHE)/github.com/gingray
+
+# delete cache for template package
 rm -rf $(go env GOMODCACHE)/github.com/gingray
+
 # or use go clean -modcache but it will clean all cache probably not what you want 
 go clean -modcache
 ```

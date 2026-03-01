@@ -8,6 +8,7 @@ import (
 
 	"github.com/gingray/go-template/internal/api"
 	"github.com/gingray/go-template/internal/consumer"
+	"github.com/gingray/go-template/internal/repo"
 	"github.com/gingray/go-template/pkg/app"
 	"github.com/gingray/go-template/pkg/config"
 	"github.com/gingray/go-template/pkg/httpserver"
@@ -47,7 +48,7 @@ to quickly create a Cobra application.`,
 		}
 
 		server := httpserver.NewServer(&cfg.HTTPServiceConfig, app)
-		router := api.NewRouter(app, kafka.NewProducer(app))
+		router := api.NewRouter(repo.NewUserRepo(app.PgPool), kafka.NewProducer(app))
 		router.SetupRoutes(app.HttpRouter)
 		kafkaConsumer := kafka.NewConsumer(app, consumer.NewBasicConsumer(app))
 

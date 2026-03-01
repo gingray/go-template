@@ -4,9 +4,9 @@ Template assume your tech stack is:
 * Postgres
 * Redis
 * Kafka
+* Gin (HTTP server)
 * Datadog
 * Sentry
-* Gin (HTTP server)
 
 Any of these components can be removed if not needed or replaced with others.
 ## STILL WORK IN PROGRESS

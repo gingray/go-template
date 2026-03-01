@@ -22,7 +22,7 @@ func (b *BasicConsumer) Topic() string {
 }
 
 func (b *BasicConsumer) Consume(ctx context.Context, key string, value []byte) error {
-	var jsonValue map[string]interface{}
+	var jsonValue interface{}
 	err := json.Unmarshal(value, &jsonValue)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal JSON: %w", err)

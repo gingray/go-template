@@ -22,7 +22,7 @@ go.work.sum
 
 # env file
 .env
-
+treemd.sh
 # Editor/IDE
  .idea/
  .vscode/

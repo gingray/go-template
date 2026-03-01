@@ -1,4 +1,4 @@
-package infra
+package lifecycle
 
 import (
 	"context"
@@ -9,10 +9,42 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type DefaultStrategy struct {
+var restartErr = errors.New("restart")
+
+type RestartStrategy struct {
+	restartSignalCh chan struct{}
 }
 
-func (i *DefaultStrategy) Process(ctx context.Context, node *Node) error {
+func (r *RestartStrategy) Process(ctx context.Context, node *Node) error {
+	for {
+		restartCtx, cancel := context.WithCancelCause(ctx)
+		go func() {
+			select {
+			case <-r.restartSignalCh:
+				cancel(restartErr)
+			case <-ctx.Done():
+				return
+			}
+		}()
+		err := r.process(restartCtx, node)
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		if !errors.Is(err, restartErr) {
+			return err
+		}
+		err = node.Component.Ready(ctx)
+		if err != nil {
+			return err
+		}
+	}
+}
+
+func (r *RestartStrategy) process(ctx context.Context, node *Node) error {
 	g, errCtx := errgroup.WithContext(ctx)
 	wg := sync.WaitGroup{}
 	wg.Add(1)

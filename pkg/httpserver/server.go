@@ -8,12 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gingray/go-template/pkg/app"
 	"github.com/gingray/go-template/pkg/config"
-	"github.com/gingray/go-template/pkg/infra"
+	"github.com/gingray/go-template/pkg/lifecycle"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type Server struct {
-	infra.BaseComponent
+	lifecycle.BaseComponent
 	router *gin.Engine
 	logger config.Logger
 	addr   string

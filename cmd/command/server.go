@@ -6,14 +6,14 @@ package command
 import (
 	"errors"
 
-	"github.com/gingray/go-template/internal/api"
-	"github.com/gingray/go-template/internal/consumer"
-	"github.com/gingray/go-template/internal/repo"
+	"github.com/gingray/go-template/internal/http"
+	"github.com/gingray/go-template/internal/kafka/consumer"
+	"github.com/gingray/go-template/internal/repo/postgres"
 	"github.com/gingray/go-template/pkg/app"
 	"github.com/gingray/go-template/pkg/config"
 	"github.com/gingray/go-template/pkg/httpserver"
-	"github.com/gingray/go-template/pkg/infra"
 	"github.com/gingray/go-template/pkg/kafka"
+	"github.com/gingray/go-template/pkg/lifecycle"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
@@ -48,11 +48,11 @@ to quickly create a Cobra application.`,
 		}
 
 		server := httpserver.NewServer(&cfg.HTTPServiceConfig, app)
-		router := api.NewRouter(repo.NewUserRepo(app.PgPool), kafka.NewProducer(app))
+		router := http.NewRouter(postgres.NewUserRepo(app.PgPool), kafka.NewProducer(app))
 		router.SetupRoutes(app.HttpRouter)
 		kafkaConsumer := kafka.NewConsumer(app, consumer.NewBasicConsumer(app))
 
-		supervisor := infra.NewSupervisor(app.Logger)
+		supervisor := lifecycle.NewSupervisor(app.Logger)
 		rootNode := supervisor.CreateRootNode()
 		appNode := supervisor.CreateNode(app)
 		serverNode := supervisor.CreateNode(server)

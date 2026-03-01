@@ -1,19 +1,19 @@
-package api
+package http
 
 import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gingray/go-template/internal/repo"
+	"github.com/gingray/go-template/internal/repo/postgres"
 	"github.com/gingray/go-template/pkg/kafka"
 )
 
 type Router struct {
-	userRepo      repo.UserRepo
+	userRepo      postgres.UserRepo
 	kafkaProducer kafka.Client
 }
 
-func NewRouter(userRepo repo.UserRepo, kafkaProducer kafka.Client) *Router {
+func NewRouter(userRepo postgres.UserRepo, kafkaProducer kafka.Client) *Router {
 	return &Router{userRepo: userRepo, kafkaProducer: kafkaProducer}
 }
 

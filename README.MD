@@ -12,65 +12,66 @@ Any of these components can be removed if not needed or replaced with others.
 ## STILL WORK IN PROGRESS
 
 ## App Structure
-
+```text
 .
-|-- ./cmd
-|   |-- ./cmd/command
-|   |   |-- ./cmd/command/root.go
-|   |   `-- ./cmd/command/server.go
-|   `-- ./cmd/main.go
-|-- ./docker-compose.yml
-|-- ./Dockerfile
-|-- ./go.mod
-|-- ./go.sum
-|-- ./internal
-|   |-- ./internal/entity
-|   |   `-- ./internal/entity/user.go
-|   |-- ./internal/http
-|   |   |-- ./internal/http/handler
-|   |   |   `-- ./internal/http/handler/probe_handler.go
-|   |   |-- ./internal/http/middleware
-|   |   `-- ./internal/http/router.go
-|   |-- ./internal/kafka
-|   |   |-- ./internal/kafka/consumer
-|   |   |   `-- ./internal/kafka/consumer/user_consumer.go
-|   |   `-- ./internal/kafka/producer
-|   |       `-- ./internal/kafka/producer/user_producer.go
-|   |-- ./internal/repo
-|   |   |-- ./internal/repo/postgres
-|   |   |   `-- ./internal/repo/postgres/user_repository.go
-|   |   `-- ./internal/repo/redis
-|   `-- ./internal/service
-|       `-- ./internal/service/user_service.go
-|-- ./LICENSE
-|-- ./migrations
-|   `-- ./migrations/20260228094948_create_users_table.sql
-|-- ./pkg
-|   |-- ./pkg/app
-|   |   |-- ./pkg/app/app.go
-|   |   |-- ./pkg/app/datadog.go
-|   |   |-- ./pkg/app/gin.go
-|   |   |-- ./pkg/app/kafka.go
-|   |   |-- ./pkg/app/logger.go
-|   |   |-- ./pkg/app/postgres.go
-|   |   |-- ./pkg/app/redis.go
-|   |   `-- ./pkg/app/sentry.go
-|   |-- ./pkg/config
-|   |   |-- ./pkg/config/config.go
-|   |   `-- ./pkg/config/logger.go
-|   |-- ./pkg/httpserver
-|   |   `-- ./pkg/httpserver/server.go
-|   |-- ./pkg/kafka
-|   |   |-- ./pkg/kafka/consumer.go
-|   |   `-- ./pkg/kafka/producer.go
-|   `-- ./pkg/lifecycle
-|       |-- ./pkg/lifecycle/component.go
-|       |-- ./pkg/lifecycle/default.go
-|       |-- ./pkg/lifecycle/restart.go
-|       |-- ./pkg/lifecycle/root.go
-|       `-- ./pkg/lifecycle/supervisor.go
-|-- ./README.MD
-`-- ./treemd.sh%
+├── cmd
+│   ├── command
+│   │   ├── root.go
+│   │   └── server.go
+│   └── main.go
+├── internal
+│   ├── entity
+│   │   └── user.go
+│   ├── http
+│   │   ├── handler
+│   │   │   └── probe_handler.go
+│   │   ├── middleware
+│   │   └── router.go
+│   ├── kafka
+│   │   ├── consumer
+│   │   │   └── user_consumer.go
+│   │   └── producer
+│   │       └── user_producer.go
+│   ├── repo
+│   │   ├── postgres
+│   │   │   └── user_repository.go
+│   │   └── redis
+│   └── service
+│       └── user_service.go
+├── migrations
+│   └── 20260228094948_create_users_table.sql
+├── pkg
+│   ├── app
+│   │   ├── app.go
+│   │   ├── datadog.go
+│   │   ├── gin.go
+│   │   ├── kafka.go
+│   │   ├── logger.go
+│   │   ├── postgres.go
+│   │   ├── redis.go
+│   │   └── sentry.go
+│   ├── config
+│   │   ├── config.go
+│   │   └── logger.go
+│   ├── httpserver
+│   │   └── server.go
+│   ├── kafka
+│   │   ├── consumer.go
+│   │   └── producer.go
+│   └── lifecycle
+│       ├── component.go
+│       ├── default.go
+│       ├── restart.go
+│       ├── root.go
+│       └── supervisor.go
+├── docker-compose.yml
+├── Dockerfile
+├── go.mod
+├── go.sum
+├── LICENSE
+├── README.MD
+└── treemd.sh
+```
 
 # Use as template
 

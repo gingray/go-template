@@ -51,14 +51,18 @@ func NewApp(cfg *config.Config) (*App, error) {
 		return nil, err
 	}
 
-	//err = InitSentry(&cfg.SentryConfig)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//err = InitDataDog(&cfg.DataDogConfig)
-	//if err != nil {
-	//	return nil, err
-	//}
+	if cfg.SentryConfig.DSN != "" {
+		err = InitSentry(&cfg.SentryConfig)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if cfg.DataDogConfig.Enabled {
+		err = InitDataDog(&cfg.DataDogConfig)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return app, nil
 }
 

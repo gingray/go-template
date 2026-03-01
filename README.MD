@@ -9,6 +9,14 @@ Template assume your tech stack is:
 * Sentry
 
 Any of these components can be removed if not needed or replaced with others.
+## Run project
+
+```shell
+cat .env.example > .env
+docker-compose up -d
+goose up
+go run ./cmd/  server --dev
+```
 ## STILL WORK IN PROGRESS
 
 ## App Structure

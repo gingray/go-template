@@ -11,14 +11,15 @@ import (
 
 type BasicConsumer struct {
 	logger config.Logger
+	topic  string
 }
 
-func NewBasicConsumer(app *app.App) *BasicConsumer {
-	return &BasicConsumer{logger: app.Logger}
+func NewBasicConsumer(app *app.App, topic string) *BasicConsumer {
+	return &BasicConsumer{logger: app.Logger, topic: topic}
 }
 
 func (b *BasicConsumer) Topic() string {
-	return "test-topic"
+	return b.topic
 }
 
 func (b *BasicConsumer) Consume(ctx context.Context, key string, value []byte) error {

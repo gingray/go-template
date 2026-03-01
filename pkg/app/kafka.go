@@ -10,6 +10,7 @@ import (
 func (a *App) WithKafka(cfg *config.KafkaConfig) error {
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(cfg.Brokers...),
+		kgo.AllowAutoTopicCreation(),
 		kgo.ConsumerGroup(cfg.ConsumerGroup),
 		kgo.ConsumeTopics(cfg.ConsumeTopics...),
 	)

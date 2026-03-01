@@ -50,7 +50,7 @@ to quickly create a Cobra application.`,
 		server := httpserver.NewServer(&cfg.HTTPServiceConfig, app)
 		router := http.NewRouter(postgres.NewUserRepo(app.PgPool), kafka.NewProducer(app))
 		router.SetupRoutes(app.HttpRouter)
-		kafkaConsumer := kafka.NewConsumer(app, consumer.NewBasicConsumer(app))
+		kafkaConsumer := kafka.NewConsumer(app, consumer.NewBasicConsumer(app, cfg.KafkaConfig.ConsumeTopics[0]))
 
 		supervisor := lifecycle.NewSupervisor(app.Logger)
 		rootNode := supervisor.CreateRootNode()

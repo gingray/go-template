@@ -113,6 +113,7 @@ go get github.com/getsentry/sentry-go
 go get gopkg.in/DataDog/dd-trace-go.v1/ddtrace
 go get gopkg.in/DataDog/dd-trace-go.v1/profiler
 go get github.com/gin-gonic/gin
+go get go.yaml.in/yaml/v4
 ```
 
 ```shell

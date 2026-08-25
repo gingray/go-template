@@ -105,6 +105,7 @@ go clean -modcache
 ## Dependencies
 
 ```shell
+go get -u github.com/spf13/cobra@latest
 go get github.com/joho/godotenv
 go get github.com/caarlos0/env/v11
 go get github.com/jackc/pgx/v5

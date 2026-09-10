@@ -52,16 +52,10 @@ to quickly create a Cobra application.`,
 		router.SetupRoutes(app.HttpRouter)
 		kafkaConsumer := kafka.NewConsumer(app, consumer.NewBasicConsumer(app, cfg.KafkaConfig.ConsumeTopics[0]))
 
-		supervisor := lifecycle.NewSupervisor(app.Logger)
-		rootNode := supervisor.CreateRootNode()
-		appNode := supervisor.CreateNode(app)
-		serverNode := supervisor.CreateNode(server)
-		consumerNode := supervisor.CreateNode(kafkaConsumer)
+		root := lifecycle.DefaultRoot(app.Logger)
+		root.ThenLast(app).Then(app, server, kafkaConsumer)
 
-		rootNode.AddNode(appNode)
-		appNode.AddNode(serverNode)
-		appNode.AddNode(consumerNode)
-		err = rootNode.Run(cmd.Context())
+		err = root.Run(cmd.Context())
 		if err != nil {
 			app.Logger.Error("run root node", "error", err)
 		}
